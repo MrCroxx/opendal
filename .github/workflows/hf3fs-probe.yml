@@ -16,7 +16,7 @@ jobs:
           sudo apt-get install -y "linux-modules-extra-$(uname -r)" rdma-core ibverbs-utils \
             cmake ninja-build libuv1-dev liblz4-dev liblzma-dev libdouble-conversion-dev \
             libdwarf-dev libunwind-dev libaio-dev libgflags-dev libgoogle-glog-dev \
-            libgtest-dev libgmock-dev clang-14 lld-14 libgoogle-perftools-dev \
+            libgtest-dev libgmock-dev clang-14 clang-format-14 lld-14 libgoogle-perftools-dev \
             libssl-dev gcc-12 g++-12 libboost-all-dev meson libibverbs-dev libnuma-dev \
             libevent-dev libfmt-dev autoconf automake libtool gettext fuse3
           sudo modprobe rdma_rxe
@@ -59,8 +59,10 @@ jobs:
           path: /home/runner/work/_temp/3fs
           key: hf3fs-22fca045-ubuntu22-v1-${{ github.run_id }}
       - name: Start single-replica 3FS and test USRBIO
-        timeout-minutes: 5
-        run: sudo -E bash ./probe.sh
+        timeout-minutes: 20
+        run: |
+          sudo prlimit --pid $$ --memlock=unlimited:unlimited
+          bash ./probe.sh
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
