@@ -41,7 +41,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           need-protoc: true
-          need-rocksdb: true
+          need-rocksdb: ${{ matrix.cases.service != 'hf3fs' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup 1Password Connect
