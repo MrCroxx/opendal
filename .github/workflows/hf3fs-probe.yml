@@ -1,0 +1,32 @@
+name: 3FS runner probe
+on:
+  push:
+    branches: [codex/hf3fs-runner-probe]
+permissions:
+  contents: read
+jobs:
+  prerequisites:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Inspect runner
+        run: |
+          uname -a
+          free -h
+          df -h /
+          ls -l /dev/fuse
+          ulimit -l
+          grep -E 'CONFIG_(INFINIBAND|RDMA_RXE|FUSE_FS)=' /boot/config-$(uname -r) || true
+          modinfo rdma_rxe || true
+      - name: Test SoftRoCE
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y rdma-core ibverbs-utils
+          sudo modprobe rdma_rxe
+          device=$(ip -4 route show default | awk 'NR == 1 {print $5}')
+          sudo rdma link add opendal_rxe type rxe netdev "$device"
+          rdma link show
+          ibv_devinfo -d opendal_rxe
+      - name: Cleanup
+        if: always()
+        run: sudo rdma link delete opendal_rxe 2>/dev/null || true
